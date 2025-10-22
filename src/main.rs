@@ -2,7 +2,7 @@
 use core::f32;
 use std::error::Error;
 use std::f32::NAN;
-use std::{array, iter, usize, vec};
+use std::{array, clone, iter, usize, vec};
 use std::iter::{zip, Sum};
 use std::ptr::dangling;
 use std::{env::set_var, fmt, io::Seek};
@@ -13,8 +13,15 @@ use num_traits::float::FloatCore;
 use num_traits::{one, zero, Float, One, PrimInt, Signed, Zero};
 
 fn main() {
-    let mut A: Matrix<f32> = Matrix { nRows: 2,nCol: 2,data: vec![2.0, 4.0,1.0, 2.0 ]};
-    let B: Matrix<f32> = Matrix {nRows: 2, nCol: 1, data: vec![6.0, 3.0]};
+    let A:Matrix<f32> = Matrix { nRows: 2, nCol: 2, data: vec![
+         2.0,7.0,
+         5.0,-4.0,
+    ]};
+    let b:Matrix<f32> = Matrix{nRows:2,nCol:1,data:vec![34.0,-1.0]};
+    let c:Matrix<f32> = g_elim(A, b).unwrap();
+    println!("{}",c);
+
+
 }
 
 #[allow(dead_code)]          
@@ -157,8 +164,6 @@ type Output = Result<Self,LinAlgError>;
         }
 
     }
-
-
 pub fn rank(mut A:Matrix<f32>) -> i32 {
         for k in 0..A.nRows-1 {
             if A.data[k*A.nCol+k] == 0.0 {
@@ -184,14 +189,8 @@ pub fn rank(mut A:Matrix<f32>) -> i32 {
         println!("{}",A);
         return value;
 }
-
 pub fn g_elim(mut A:Matrix<f32>,mut b:Matrix<f32>) -> Result<Matrix<f32>,LinAlgError> {
-    if A.nRows != b.nRows {
-        return Err(LinAlgError::DimensionError);
-    }
-    if b.nCol > 1 {
-        return Err(LinAlgError::DimensionError);
-    }
+    let (mut A,mut b) = partial_pivot(A,b).unwrap();
     let mut x:Matrix<f32> = Matrix::zeros(b.nRows, 1);
     for k in 0..A.nRows -1 //-1 cus last row will have all zeros but pivot
     {
@@ -205,7 +204,7 @@ pub fn g_elim(mut A:Matrix<f32>,mut b:Matrix<f32>) -> Result<Matrix<f32>,LinAlgE
             for j in k..A.nCol {
                 A.data[i*A.nCol+j] *= factor;
                 A.data[i*A.nCol+j] -= A.data[k*A.nCol+j];
-                if A.data[i*A.nCol+j] == NAN ||  A.data[i*A.nCol+j] <= 1e-10{
+                if A.data[i*A.nCol+j] == NAN ||  A.data[i*A.nCol+j].abs() <= 1e-10{
                     A.data[i*A.nCol+j] = 0.0;
                 }
             }  
@@ -236,9 +235,31 @@ pub fn g_elim(mut A:Matrix<f32>,mut b:Matrix<f32>) -> Result<Matrix<f32>,LinAlgE
 
    
 }
-// Stopping on oct 14th 2025 as i need to cover more material to ahead.
-// Remember how dot product works, and how the gelim works. Refer your notes...
-
-
+pub fn partial_pivot(mut A:Matrix<f32>,mut b:Matrix<f32>) -> Result<(Matrix<f32>,Matrix<f32>),LinAlgError> {
+    if A.nRows != b.nRows {
+        return Err(LinAlgError::DimensionError);
+    }
+    if b.nCol > 1 {
+        return Err(LinAlgError::DimensionError);
+    }
+    for k in (0..A.nRows) {
+        let mut max_value = A.data[k*A.nCol+k].abs();
+        let mut max_index = k ;
+        for i in (k+1)..A.nRows{
+            let current_abs = A.data[i*A.nCol+k].abs();
+            if current_abs > max_value {
+                max_value = current_abs;
+                max_index = i;
+            }
+        }
+        if max_index != k {
+            b.data.swap(k, max_index);
+        for j in 0..A.nCol {
+            A.data.swap(k*A.nCol+j,max_index*A.nCol+j);
+        }
+        }
+    } 
+    Ok(((A,b)))
+}
 
 
