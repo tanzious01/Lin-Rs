@@ -13,13 +13,13 @@ use num_traits::float::FloatCore;
 use num_traits::{one, zero, Float, One, PrimInt, Signed, Zero};
 
 fn main() {
-    let A:Matrix<f32> = Matrix { nRows: 2, nCol: 2, data: vec![
-         2.0,7.0,
-         5.0,-4.0,
+    let A:Matrix<f32> = Matrix { nRows: 3, nCol: 3, data: vec![
+         2.0,1.0,1.0,
+         4.0,3.0,3.0,
+         8.0,5.0,5.0,
     ]};
-    let b:Matrix<f32> = Matrix{nRows:2,nCol:1,data:vec![34.0,-1.0]};
-    let c:Matrix<f32> = g_elim(A, b).unwrap();
-    println!("{}",c);
+    let b:Matrix<f32> = Matrix{nRows:3,nCol:1,data:vec![34.0,-1.0,4.0]};
+    println!("{}",lu(A, b).unwrap().0);
 
 
 }
@@ -194,9 +194,6 @@ pub fn g_elim(mut A:Matrix<f32>,mut b:Matrix<f32>) -> Result<Matrix<f32>,LinAlgE
     let mut x:Matrix<f32> = Matrix::zeros(b.nRows, 1);
     for k in 0..A.nRows -1 //-1 cus last row will have all zeros but pivot
     {
-        if  A.data[k*A.nCol+k] == 0.0 {
-            continue;
-        }
         for i in (k+1)..A.nRows  // this will start at the row after the pivot one so we can
                                         // 0 it out
         {
@@ -262,4 +259,38 @@ pub fn partial_pivot(mut A:Matrix<f32>,mut b:Matrix<f32>) -> Result<(Matrix<f32>
     Ok(((A,b)))
 }
 
+
+
+
+
+
+
+pub fn lu(mut A:Matrix<f32>,mut b:Matrix<f32>) -> Result<(Matrix<f32>,Matrix<f32>),LinAlgError> {
+    let (mut A,mut b) = partial_pivot(A, b)?;
+    let mut L:Matrix<f32> = Matrix::eye(A.nCol);
+    let mut x:Matrix<f32> = Matrix::zeros(b.nRows, 1);
+    for k in 0..A.nRows -1 //-1 cus last row will have all zeros but pivot
+    {
+        for i in (k+1)..A.nRows  // this will start at the row after the pivot one so we can
+                                        // 0 it out
+        {
+            let factor:f32 = A.data[i*A.nCol+k] / A.data[k*A.nCol+k];
+            println!("{}",A);
+            L.data[i*L.nCol+k] = factor;
+            for j in k..A.nCol {
+                A.data[i*A.nCol + j] -= factor * A.data[k*A.nCol + j];
+                if A.data[i*A.nCol+j] == NAN ||  A.data[i*A.nCol+j].abs() <= 1e-10{
+                    A.data[i*A.nCol+j] = 0.0;
+                }
+            }  
+            b.data[i] *=factor;
+            b.data[i]-= b.data[k];
+        }
+    }
+    Ok((A,L))
+}
+
+//In Partial pivoting instead of returning b, return a vector which gives you the order of which b
+//was shuffled. This will help you in the long run to calculate Ax=b for various different b values
+//when you have A=LU form.
 
