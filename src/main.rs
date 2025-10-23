@@ -190,7 +190,7 @@ pub fn rank(mut A:Matrix<f32>) -> i32 {
         return value;
 }
 pub fn g_elim(mut A:Matrix<f32>,mut b:Matrix<f32>) -> Result<Matrix<f32>,LinAlgError> {
-    let (mut A,mut b) = partial_pivot(A,b).unwrap();
+    // let (mut A,mut b) = partial_pivot(A,b).unwrap();
     let mut x:Matrix<f32> = Matrix::zeros(b.nRows, 1);
     for k in 0..A.nRows -1 //-1 cus last row will have all zeros but pivot
     {
@@ -232,13 +232,14 @@ pub fn g_elim(mut A:Matrix<f32>,mut b:Matrix<f32>) -> Result<Matrix<f32>,LinAlgE
 
    
 }
-pub fn partial_pivot(mut A:Matrix<f32>,mut b:Matrix<f32>) -> Result<(Matrix<f32>,Matrix<f32>),LinAlgError> {
+pub fn partial_pivot(mut A:Matrix<f32>,mut b:Matrix<f32>) -> Result<(Matrix<f32>,Matrix<f32>,Matrix<usize>),LinAlgError> {
     if A.nRows != b.nRows {
         return Err(LinAlgError::DimensionError);
     }
     if b.nCol > 1 {
         return Err(LinAlgError::DimensionError);
     }
+    let mut index_vec:Matrix<usize> = Matrix::zeros(b.nRows, b.nCol);
     for k in (0..A.nRows) {
         let mut max_value = A.data[k*A.nCol+k].abs();
         let mut max_index = k ;
@@ -251,12 +252,13 @@ pub fn partial_pivot(mut A:Matrix<f32>,mut b:Matrix<f32>) -> Result<(Matrix<f32>
         }
         if max_index != k {
             b.data.swap(k, max_index);
+            index_vec.data[k] = max_index;
         for j in 0..A.nCol {
             A.data.swap(k*A.nCol+j,max_index*A.nCol+j);
         }
         }
     } 
-    Ok(((A,b)))
+    Ok(((A,b,index_vec)))
 }
 
 
@@ -266,7 +268,7 @@ pub fn partial_pivot(mut A:Matrix<f32>,mut b:Matrix<f32>) -> Result<(Matrix<f32>
 
 
 pub fn lu(mut A:Matrix<f32>,mut b:Matrix<f32>) -> Result<(Matrix<f32>,Matrix<f32>),LinAlgError> {
-    let (mut A,mut b) = partial_pivot(A, b)?;
+    // let (mut A,mut b) = partial_pivot(A, b)?;
     let mut L:Matrix<f32> = Matrix::eye(A.nCol);
     let mut x:Matrix<f32> = Matrix::zeros(b.nRows, 1);
     for k in 0..A.nRows -1 //-1 cus last row will have all zeros but pivot
