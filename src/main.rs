@@ -421,10 +421,6 @@ fn projection(x: Matrix<f32>, v: Matrix<f32>) -> Result<Matrix<f32>, LinAlgError
     Ok(projection)
 }
 
-fn test_chunk(A: Matrix<f32>) {
-    let v: Vec<Matrix<f32>> = A.data.chunks(A.nCol).map(|x| x.to_vec().into()).collect();
-}
-
 fn orthogonalize(A: Matrix<f32>) -> Matrix<f32> {
     let A = A.transpose();
     let v: Vec<Matrix<f32>> = A.data.chunks(A.nCol).map(|x| x.to_vec().into()).collect();
@@ -466,3 +462,5 @@ pub fn qr_solve(A: Matrix<f32>, b: Matrix<f32>) -> Matrix<f32> {
     }
     return x;
 }
+
+//remove clones with proper references.
