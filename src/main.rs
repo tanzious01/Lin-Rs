@@ -17,12 +17,17 @@ fn main() {
     let A: Matrix<f32> = Matrix {
         nRows: 3,
         nCol: 3,
-        data: vec![1., 2., 3., 4., 5., 6., 7., 8., 10.],
+        data: vec![2., 5., 2., 3., -2., 4., -6., 1., -7.],
     };
 
-    let Q = orthogonalize(A.clone());
-    let R = (Q.transpose() * A).unwrap();
-    println!("{}", R);
+    let b = Matrix {
+        nRows: 3,
+        nCol: 1,
+        data: vec![-38., 17., -12.],
+    };
+
+    let solved = qr_solve(A, b);
+    println!("{}", solved);
 }
 
 #[allow(dead_code)]
@@ -445,4 +450,19 @@ fn orthogonalize(A: Matrix<f32>) -> Matrix<f32> {
         data: final_vector.into_iter().collect(),
     };
     return final_matrix.transpose();
+}
+
+pub fn qr_solve(A: Matrix<f32>, b: Matrix<f32>) -> Matrix<f32> {
+    let Q = orthogonalize(A.clone());
+    let R = (Q.clone().transpose() * A.clone()).unwrap();
+    let mut x: Matrix<f32> = Matrix::zeros(A.nRows.clone(), 1);
+    let qTb = (Q.transpose() * b.clone()).unwrap();
+    for i in (0..R.nRows).rev() {
+        let mut sum = 0.0;
+        for j in i..R.nCol {
+            sum += R.data[i * R.nCol + j] * x.data[j];
+        }
+        x.data[i] = (qTb.data[i] - sum) / R.data[i * R.nCol + i];
+    }
+    return x;
 }
