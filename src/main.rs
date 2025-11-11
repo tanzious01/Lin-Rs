@@ -21,8 +21,7 @@ fn main() {
     };
 
     let Q = orthogonalize(A.clone());
-    let R = (A * Q.clone().transpose()).unwrap();
-    let find_A = (R.clone() * Q).unwrap();
+    let R = (Q.transpose() * A).unwrap();
     println!("{}", R);
 }
 
@@ -422,6 +421,7 @@ fn test_chunk(A: Matrix<f32>) {
 }
 
 fn orthogonalize(A: Matrix<f32>) -> Matrix<f32> {
+    let A = A.transpose();
     let v: Vec<Matrix<f32>> = A.data.chunks(A.nCol).map(|x| x.to_vec().into()).collect();
     let mut u: Vec<Matrix<f32>> = Vec::new();
     u.push(v[0].clone());
@@ -442,7 +442,7 @@ fn orthogonalize(A: Matrix<f32>) -> Matrix<f32> {
     let final_matrix: Matrix<f32> = Matrix {
         nRows: A.nRows,
         nCol: A.nCol,
-        data: final_vector,
+        data: final_vector.into_iter().collect(),
     };
-    return final_matrix;
+    return final_matrix.transpose();
 }
