@@ -83,7 +83,20 @@ pub fn q_solve(A: &Matrix, b: &Vec<f64>) -> Vec<f64> {
     let Q = orthonormal(A);
     let R = Q.transpose().dot(&A).unwrap();
     let QTb = Q.transpose().dot(&b_mat).unwrap();
-    println!("{}",R);
-    let mut x: Vec<f64> = vec![0.0; A.nCols]; 
-    // FIGURE THIS OUT NEXT TIME!
-}
+    let mut x: Vec<f64> = vec![0.0; A.nCols];
+    // Note we are dealing with square matrices for this problem!
+    for i in (0..R.nRows).rev(){
+        let mut sum = 0.0;
+        // Because we deal with square matrices, last row is last column. If we reverse
+        // We can access last column. This allows us to calculate the sum to be subtracted.
+        // since its reverse i..Ncol, for a 3x3 it will start at 3-3 which is no iteration
+        // then 3-2. which is 1 iteration so we get some values into sum. 
+        // then 3-1 which adds more onto sum.
+        // Draw this out on a whiteboard and record your thought process.
+        for j in (i..R.nCols).rev(){
+            sum += R.data[i*R.nCols+j]*x[j];
+        }
+        x[i] = (QTb.data[i]-sum)/R.data[i*R.nCols+i];
+    }
+    return x;
+
