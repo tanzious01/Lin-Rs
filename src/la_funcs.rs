@@ -76,7 +76,6 @@ pub fn orthonormal(A: &Matrix) -> Matrix {
     ui_vec.iter().enumerate().for_each(|(i,e)|new_Matrix.set_col(i, e));
     return new_Matrix
 }
-
 pub fn q_solve(A: &Matrix, b: &Vec<f64>) -> Vec<f64> {
     // 1. Setup the math
     let b_mat = Matrix { nRows: b.len(), nCols: 1, data: b.to_vec() };
@@ -99,4 +98,14 @@ pub fn q_solve(A: &Matrix, b: &Vec<f64>) -> Vec<f64> {
         x[i] = (QTb.data[i]-sum)/R.data[i*R.nCols+i];
     }
     return x;
+
+
+// Make algo to find eigenvalues and vectors using QR algorithim next.
+
+
+
+
+
+
+
 

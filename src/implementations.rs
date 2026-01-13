@@ -31,9 +31,6 @@ impl Add<f64> for Matrix {
 }
 
 
-
-
-
 impl Add<Matrix> for Matrix {
     type Output = Self;
     fn add(self,b:Matrix) -> Matrix {
@@ -84,7 +81,6 @@ impl Matrix {
             }
         }
         return transposed
-
     }
 
     pub fn dot (&self,other:&Self) -> Result<Matrix,LinAlgError> {
